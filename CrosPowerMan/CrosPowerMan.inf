@@ -1,0 +1,88 @@
+;
+; CrosPowerMan.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318}
+Provider=%ManufacturerName%
+CatalogFile=CrosPowerMan.cat
+DriverVer   = 05/05/2016,1.0; TODO: set DriverVer in stampinf property pages
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=CrosPowerMan_RegistryAdd
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+CrosPowerMan.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%CrosPowerMan.DeviceDesc%=CrosPowerMan_Device, Root\CrosPowerMan ; TODO: edit hw-id
+%CrosKbLight.DeviceDesc%=CrosPowerMan_Device, ACPI\GOOG0002 ; TODO: edit hw-id
+
+[CrosPowerMan_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+CrosPowerMan.sys
+
+;-------------- Service installation
+[CrosPowerMan_Device.NT.Services]
+AddService = CrosPowerMan,%SPSVCINST_ASSOCSERVICE%, CrosPowerMan_Service_Inst
+
+; -------------- CrosPowerMan driver install sections
+[CrosPowerMan_Service_Inst]
+DisplayName    = %CrosPowerMan.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\CrosPowerMan.sys
+LoadOrderGroup = Extended Base
+
+;
+;--- CrosPowerMan_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+CrosPowerMan_Device_CoInstaller_CopyFiles = 11
+
+[CrosPowerMan_Device.NT.CoInstallers]
+AddReg=CrosPowerMan_Device_CoInstaller_AddReg
+CopyFiles=CrosPowerMan_Device_CoInstaller_CopyFiles
+
+[CrosPowerMan_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[CrosPowerMan_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[SourceDisksFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+[CrosPowerMan_Device.NT.Wdf]
+KmdfService =  CrosPowerMan, CrosPowerMan_wdfsect
+[CrosPowerMan_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="CoolStar" ; TODO: add ManufacturerName
+DiskName = "Chromium Embedded Power Manager"
+CrosPowerMan.DeviceDesc = "Chromium Embedded Power Manager"
+CrosKbLight.DeviceDesc = "Chromium Embedded Power Manager"
+CrosPowerMan.SVCDESC = "Chromium Embedded Power Manager"
